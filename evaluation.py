@@ -1,0 +1,255 @@
+import json
+import os
+import re
+from collections import Counter
+from typing import Optional
+
+from datasets import Dataset
+from tqdm import tqdm
+
+import config
+
+
+def _normalize_text(text: str) -> str:
+    text = text.lower()
+    text = re.sub(r"[^\w\s]", "", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def compute_f1(prediction: str, ground_truth: str) -> float:
+    pred_tokens = _normalize_text(prediction).split()
+    truth_tokens = _normalize_text(ground_truth).split()
+
+    if not pred_tokens or not truth_tokens:
+        return 0.0
+
+    common = Counter(pred_tokens) & Counter(truth_tokens)
+    num_common = sum(common.values())
+
+    if num_common == 0:
+        return 0.0
+
+    precision = num_common / len(pred_tokens)
+    recall = num_common / len(truth_tokens)
+    f1 = 2 * precision * recall / (precision + recall)
+    return f1
+
+
+def compute_context_recall(ground_truth: str, contexts: list[str]) -> float:
+    truth_tokens = set(_normalize_text(ground_truth).split())
+    if not truth_tokens:
+        return 0.0
+    context_text = " ".join(contexts)
+    context_tokens = set(_normalize_text(context_text).split())
+    overlap = truth_tokens & context_tokens
+    return len(overlap) / len(truth_tokens)
+
+
+def compute_context_precision(ground_truth: str, contexts: list[str]) -> float:
+    truth_tokens = set(_normalize_text(ground_truth).split())
+    if not truth_tokens or not contexts:
+        return 0.0
+
+    relevant_count = 0
+    precision_sum = 0.0
+    for i, ctx in enumerate(contexts):
+        ctx_tokens = set(_normalize_text(ctx).split())
+        if truth_tokens & ctx_tokens:
+            relevant_count += 1
+            precision_sum += relevant_count / (i + 1)
+
+    if relevant_count == 0:
+        return 0.0
+    return precision_sum / relevant_count
+
+
+def compute_answer_relevance(question: str, answer: str) -> float:
+    q_tokens = set(_normalize_text(question).split())
+    a_tokens = set(_normalize_text(answer).split())
+
+    stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been",
+                  "being", "have", "has", "had", "do", "does", "did", "will",
+                  "would", "could", "should", "may", "might", "shall", "can",
+                  "to", "of", "in", "for", "on", "with", "at", "by", "from",
+                  "as", "into", "through", "during", "before", "after", "and",
+                  "but", "or", "not", "no", "this", "that", "these", "those",
+                  "it", "its", "what", "which", "who", "whom", "how", "when",
+                  "where", "why", "if", "then", "than", "so", "very", "just",
+                  "about", "above", "also", "both", "each", "other", "some",
+                  "such", "more", "most", "own", "same", "based", "answer",
+                  "question", "context", "following", "below"}
+
+    q_tokens -= stop_words
+    a_tokens -= stop_words
+
+    if not q_tokens or not a_tokens:
+        return 0.5
+
+    overlap = q_tokens & a_tokens
+    return min(1.0, len(overlap) / max(len(q_tokens), 1) + 0.3)
+
+
+def compute_faithfulness(answer: str, contexts: list[str]) -> float:
+    a_tokens = set(_normalize_text(answer).split())
+    stop_words = {"the", "a", "an", "is", "are", "was", "were", "be", "been",
+                  "have", "has", "had", "do", "does", "did", "will", "would",
+                  "to", "of", "in", "for", "on", "with", "at", "by", "from",
+                  "as", "and", "but", "or", "not", "this", "that", "it", "its"}
+    a_tokens -= stop_words
+
+    if not a_tokens:
+        return 0.0
+
+    context_text = " ".join(contexts)
+    c_tokens = set(_normalize_text(context_text).split())
+    grounded = a_tokens & c_tokens
+    return len(grounded) / len(a_tokens)
+
+
+def _try_ragas_evaluate(results: list[dict], llm_name: str) -> Optional[list[dict]]:
+    try:
+        from ragas import evaluate as ragas_evaluate
+        from ragas.metrics import (
+            answer_relevancy,
+            context_precision,
+            context_recall,
+            faithfulness,
+        )
+        from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+
+        llm = ChatOpenAI(model="gpt-4o-mini", api_key=config.OPENAI_API_KEY)
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small", api_key=config.OPENAI_API_KEY)
+
+        questions, answers, contexts, ground_truths = [], [], [], []
+        for r in results:
+            if llm_name not in r["responses"]:
+                continue
+            response = r["responses"][llm_name]
+            if response.startswith("ERROR:"):
+                continue
+            questions.append(r["question"])
+            answers.append(response)
+            contexts.append(r["retrieved_chunks"])
+            ground_truths.append(r["ground_truth"])
+
+        if not questions:
+            return None
+
+        ds = Dataset.from_dict({
+            "question": questions,
+            "answer": answers,
+            "contexts": contexts,
+            "ground_truth": ground_truths,
+        })
+
+        ragas_result = ragas_evaluate(
+            ds,
+            metrics=[answer_relevancy, faithfulness, context_precision, context_recall],
+            llm=llm,
+            embeddings=embeddings,
+        )
+        return ragas_result.to_pandas().to_dict("records")
+    except Exception as e:
+        print(f"  RAGAS library failed: {e}")
+        print(f"  Using manual metric computation instead.")
+        return None
+
+
+def evaluate_with_metrics(results: list[dict], llm_name: str) -> list[dict]:
+    ragas_results = None
+
+    evaluated = []
+    idx = 0
+    for r in results:
+        if llm_name not in r["responses"]:
+            continue
+        response = r["responses"][llm_name]
+        if response.startswith("ERROR:"):
+            continue
+
+        metrics = {
+            "question": r["question"],
+            "ground_truth": r["ground_truth"],
+            "response": response,
+            "query_type": r["query_type"],
+            "domain": r["domain"],
+            "dataset": r["dataset"],
+            "strategy": r["strategy"],
+            "llm": llm_name,
+            "f1_score": compute_f1(response, r["ground_truth"]),
+        }
+
+        if ragas_results and idx < len(ragas_results):
+            row = ragas_results[idx]
+            metrics["answer_relevancy"] = float(row.get("answer_relevancy", 0))
+            metrics["faithfulness"] = float(row.get("faithfulness", 0))
+            metrics["context_precision"] = float(row.get("context_precision", 0))
+            metrics["context_recall"] = float(row.get("context_recall", 0))
+        else:
+            metrics["answer_relevancy"] = compute_answer_relevance(
+                r["question"], response
+            )
+            metrics["faithfulness"] = compute_faithfulness(
+                response, r["retrieved_chunks"]
+            )
+            metrics["context_precision"] = compute_context_precision(
+                r["ground_truth"], r["retrieved_chunks"]
+            )
+            metrics["context_recall"] = compute_context_recall(
+                r["ground_truth"], r["retrieved_chunks"]
+            )
+
+        evaluated.append(metrics)
+        idx += 1
+
+    return evaluated
+
+
+def evaluate_all(results: list[dict]) -> list[dict]:
+    all_evaluated = []
+    llm_names = set()
+    for r in results:
+        llm_names.update(r["responses"].keys())
+
+    for llm_name in sorted(llm_names):
+        print(f"\nEvaluating {llm_name}...")
+        evaluated = evaluate_with_metrics(results, llm_name)
+        all_evaluated.extend(evaluated)
+        print(f"  {len(evaluated)} results evaluated for {llm_name}")
+
+    return all_evaluated
+
+
+def save_evaluation(evaluated: list[dict], filename: str = "evaluation_results.json"):
+    path = os.path.join(config.RESULTS_DIR, filename)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(evaluated, f, indent=2, ensure_ascii=False)
+    print(f"Saved {len(evaluated)} evaluation results to {path}")
+
+
+def load_evaluation(filename: str = "evaluation_results.json") -> list[dict]:
+    path = os.path.join(config.RESULTS_DIR, filename)
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+if __name__ == "__main__":
+    results_path = os.path.join(config.RESULTS_DIR, "rag_results.json")
+    if os.path.exists(results_path):
+        with open(results_path, "r", encoding="utf-8") as f:
+            results = json.load(f)
+        evaluated = evaluate_all(results)
+        save_evaluation(evaluated)
+
+        from collections import defaultdict
+        by_strategy = defaultdict(list)
+        for e in evaluated:
+            by_strategy[e["strategy"]].append(e.get("f1_score", 0))
+
+        print("\n--- F1 by Strategy ---")
+        for s, scores in sorted(by_strategy.items()):
+            avg = sum(scores) / len(scores) if scores else 0
+            print(f"  {s}: {avg:.4f} (n={len(scores)})")
+    else:
+        print("No results found. Run the RAG pipeline first.")
