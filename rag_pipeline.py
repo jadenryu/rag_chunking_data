@@ -117,17 +117,18 @@ class RAGPipeline:
 
         all_results = []
         completed_keys = set()
-        if resume_from and os.path.exists(resume_from):
-            with open(resume_from, "r", encoding="utf-8", errors="replace") as f:
+
+        output_path = resume_from or os.path.join(
+            config.RESULTS_DIR, "rag_results.json"
+        )
+
+        if os.path.exists(output_path):
+            with open(output_path, "r", encoding="utf-8", errors="replace") as f:
                 all_results = json.load(f)
             for r in all_results:
                 key = f"{r['dataset']}_{r['question'][:50]}_{r['strategy']}"
                 completed_keys.add(key)
             print(f"Resuming from {len(all_results)} completed results")
-
-        output_path = resume_from or os.path.join(
-            config.RESULTS_DIR, "rag_results.json"
-        )
 
         total = len(records) * len(target_strategies)
         pbar = tqdm(total=total, desc="RAG Pipeline")

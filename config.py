@@ -97,6 +97,10 @@ RAG_PROMPT_TEMPLATE = (
 
 MAX_QUERIES_PER_DATASET = 50
 
+JUDGE_MODEL = "openai/gpt-4o-mini"
+JUDGE_CONCURRENCY = 15
+JUDGE_MAX_CONTEXT_CHARS = 6000
+
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 FIGURES_DIR = os.path.join(os.path.dirname(__file__), "figures")

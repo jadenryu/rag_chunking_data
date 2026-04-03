@@ -8,7 +8,7 @@ import pandas as pd
 
 import config
 
-METRICS = ["f1_score", "answer_relevancy", "faithfulness", "context_precision", "context_recall"]
+METRICS = ["f1_score", "token_f1", "answer_relevancy", "faithfulness", "context_precision", "context_recall"]
 
 
 def load_results(filename: str = "evaluation_results.json") -> pd.DataFrame:

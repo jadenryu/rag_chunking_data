@@ -1,6 +1,8 @@
 import re
 import tiktoken
 
+import config
+
 _enc = tiktoken.get_encoding("cl100k_base")
 
 
@@ -90,6 +92,34 @@ def semantic_chunk(text: str, max_tokens: int) -> list[str]:
     return chunks
 
 
+def langchain_semantic_chunk(text: str, max_tokens: int) -> list[str]:
+    from langchain_experimental.text_splitter import SemanticChunker
+    from langchain_openai import OpenAIEmbeddings
+
+    embeddings = OpenAIEmbeddings(
+        model=config.EMBEDDING_MODEL,
+        openai_api_key=config.OPENAI_API_KEY,
+    )
+    splitter = SemanticChunker(
+        embeddings,
+        breakpoint_threshold_type="percentile",
+        breakpoint_threshold_amount=75,
+    )
+
+    docs = splitter.create_documents([text])
+    chunks = []
+    for doc in docs:
+        chunk_text = doc.page_content.strip()
+        if not chunk_text:
+            continue
+        if count_tokens(chunk_text) > max_tokens:
+            sub_chunks = fixed_chunk(chunk_text, max_tokens)
+            chunks.extend(sub_chunks)
+        else:
+            chunks.append(chunk_text)
+    return chunks
+
+
 def apply_chunking(text: str, strategy_name: str, strategy_config: dict) -> list[str]:
     if strategy_config["type"] == "fixed":
         return fixed_chunk(
@@ -99,6 +129,8 @@ def apply_chunking(text: str, strategy_name: str, strategy_config: dict) -> list
         )
     elif strategy_config["type"] == "semantic":
         return semantic_chunk(text, max_tokens=strategy_config["max_tokens"])
+    elif strategy_config["type"] == "langchain_semantic":
+        return langchain_semantic_chunk(text, max_tokens=strategy_config["max_tokens"])
     else:
         raise ValueError(f"Unknown chunking type: {strategy_config['type']}")
 

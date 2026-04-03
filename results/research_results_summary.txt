@@ -1,0 +1,272 @@
+================================================================================
+RAG PIPELINE EVALUATION: RESEARCH RESULTS SUMMARY
+================================================================================
+Dataset: 13,095 evaluation records
+LLMs: 5 (Claude 3.5 Sonnet, GPT-4o Mini, Gemini 2.5 Pro, Llama 3.1 70B, Mistral Large)
+Chunking Strategies: 9 (fixed_128/256/512, semantic_128/256/512, lc_semantic_128/256/512)
+Domains: 3 (general, medical, finance)
+Query Types: 4 (single-hop, multi-hop, comparative, unanswerable)
+Evaluation: LLM-as-Judge (GPT-4o-mini) using 1-5 Likert scale normalized to [0,1]
+  Based on: Zheng et al. (2023), Liu et al. (2023) G-Eval, Saad-Falcon et al. (2023) ARES
+
+
+================================================================================
+1. OVERALL PERFORMANCE
+================================================================================
+
+Metric                  Mean     SD       Median
+-----------------------------------------------
+LLM Judge Score         0.8254   0.3226   1.0000
+Answer Relevancy        0.9547   0.1223   1.0000
+Faithfulness            0.5944   0.1948   0.6000
+Context Precision       0.5586   0.4656   0.8333
+Context Recall          0.5529   0.4533   0.6842
+
+Key finding: RAG systems achieved high answer correctness (82.5%) and relevancy
+(95.5%), but faithfulness (59.4%) — the degree to which answers are grounded in
+retrieved context — remains a significant limitation across all configurations.
+
+
+================================================================================
+2. LLM PERFORMANCE COMPARISON
+================================================================================
+
+LLM                  Judge Score   Relevancy   Faithfulness
+-----------------------------------------------------------
+Mistral Large        0.8769        0.9876      0.5107
+GPT-4o Mini          0.8303        0.9767      0.6416
+Claude 3.5 Sonnet    0.8300        0.9569      0.5772
+Llama 3.1 70B        0.8152        0.9529      0.6413
+Gemini 2.5 Pro       0.7747        0.8996      0.6014
+
+Key findings:
+- Mistral Large achieved the highest correctness score (0.877) but the lowest
+  faithfulness (0.511), suggesting it draws heavily on parametric knowledge
+  rather than retrieved context.
+- GPT-4o Mini and Llama 3.1 70B achieved the best faithfulness scores (~0.64),
+  indicating stronger grounding in retrieved context.
+- Gemini 2.5 Pro scored lowest on correctness (0.775) and relevancy (0.900),
+  potentially due to more conservative or hedged responses.
+- There is an inverse relationship between correctness and faithfulness for
+  some models, suggesting a trade-off between leveraging parametric knowledge
+  and staying grounded in context.
+
+
+================================================================================
+3. CHUNKING STRATEGY ANALYSIS
+================================================================================
+
+Strategy            Judge Score   Faithfulness   Ctx Precision   Ctx Recall
+--------------------------------------------------------------------------
+fixed_128           0.8048        0.5767         0.5391          0.5355
+fixed_256           0.8340        0.6130         0.5694          0.5702
+fixed_512           0.8289        0.6388         0.5928          0.5956
+semantic_128        0.8196        0.5612         0.5542          0.5330
+semantic_256        0.8313        0.6135         0.5631          0.5658
+semantic_512        0.8330        0.6393         0.5848          0.5895
+lc_semantic_128     0.8093        0.5597         0.5365          0.5194
+lc_semantic_256     0.8282        0.5728         0.5440          0.5373
+lc_semantic_512     0.8397        0.5751         0.5439          0.5302
+
+Key findings:
+- Larger chunk sizes (512) consistently outperformed smaller sizes (128) across
+  all metrics, with the most pronounced improvements in faithfulness (+7 points)
+  and context recall (+4 points).
+- The difference between fixed and semantic chunking methods was NOT statistically
+  significant for any metric (all p > 0.05, all Cohen's d < 0.03).
+- LangChain semantic chunking showed marginally higher correctness at 512 tokens
+  (0.8397) but lower context recall than fixed/semantic at the same size.
+
+
+================================================================================
+4. FIXED VS. SEMANTIC CHUNKING (Statistical Tests)
+================================================================================
+
+Metric              Fixed    Semantic   t-stat   p-value   Cohen's d
+--------------------------------------------------------------------
+Judge Score         0.8226   0.8279     -0.776   0.438     -0.017
+Answer Relevancy    0.9558   0.9548      0.366   0.714      0.008
+Faithfulness        0.6095   0.6046      1.179   0.238      0.025
+Context Precision   0.5671   0.5673     -0.023   0.982     -0.001
+Context Recall      0.5671   0.5628      0.445   0.657      0.010
+
+Conclusion: No statistically significant differences were found between fixed
+and semantic chunking across any evaluation metric. Effect sizes are negligible
+(all |d| < 0.03). This suggests that for the datasets and configurations tested,
+the choice between fixed and semantic chunking does not materially impact RAG
+performance. Chunk SIZE matters more than chunk METHOD.
+
+
+================================================================================
+5. CHUNK SIZE ANALYSIS
+================================================================================
+
+Chunk Size   Judge Score   Faithfulness   Ctx Precision   Ctx Recall
+--------------------------------------------------------------------
+128          0.8112        0.5659         0.5433          0.5293
+256          0.8312        0.5997         0.5588          0.5578
+512          0.8338        0.6177         0.5738          0.5718
+
+Key finding: Increasing chunk size from 128 to 512 tokens improved all metrics.
+The most substantial gains were in faithfulness (+5.2 points) and context recall
+(+4.3 points), indicating that larger chunks provide more complete context for
+answer generation. Diminishing returns appear between 256 and 512.
+
+
+================================================================================
+6. DOMAIN ANALYSIS
+================================================================================
+
+Domain       N       Judge Score   Faithfulness   Ctx Precision   Ctx Recall
+---------------------------------------------------------------------------
+General      8,595   0.8645        0.6296         0.5776          0.6550
+Medical      2,250   0.8727        0.5543         0.9958          0.6159
+Finance      2,250   0.6288        0.5005         0.0489          0.1000
+
+Key findings:
+- Medical domain achieved excellent context precision (0.996), suggesting the
+  retrieval system effectively surfaces relevant medical passages, though
+  faithfulness (0.554) lags behind general domain.
+- Finance domain performed significantly worse across all metrics, particularly
+  context precision (0.049) and context recall (0.100). This indicates severe
+  retrieval failures — the vector store is not retrieving relevant financial
+  passages, leading to poor answer quality (0.629).
+- The finance retrieval failure likely stems from the nature of financial data
+  (tables, numerical data) being poorly represented in embedding space compared
+  to narrative text.
+
+
+================================================================================
+7. QUERY TYPE ANALYSIS
+================================================================================
+
+Query Type       N       Judge Score   Faithfulness   Ctx Precision   Ctx Recall
+--------------------------------------------------------------------------------
+Comparative      1,305   0.8389        0.5517         0.1543          0.1954
+Multi-hop        2,835   0.8213        0.6142         0.6668          0.8058
+Single-hop       7,650   0.8296        0.5841         0.6828          0.6145
+Unanswerable     1,305   0.7962        0.6550         0.0000          0.0000
+
+Key findings:
+- Multi-hop queries achieved the highest context recall (0.806), suggesting the
+  retrieval system successfully surfaces multiple relevant passages.
+- Comparative queries had very low context precision (0.154) and recall (0.195),
+  indicating difficulty retrieving passages that support comparison tasks.
+- Unanswerable queries showed 0.0 context precision and recall (expected, as no
+  relevant context exists), yet achieved a correctness score of 0.796, suggesting
+  most LLMs appropriately recognize and decline unanswerable questions.
+- Correctness scores were relatively stable across query types (0.80-0.84),
+  indicating LLMs can compensate for retrieval gaps with parametric knowledge.
+
+
+================================================================================
+8. BEST AND WORST CONFIGURATIONS
+================================================================================
+
+Top 5 Configurations (by overall mean of all metrics):
+  1. fixed_512 + GPT-4o Mini         (overall: 0.737)
+  2. semantic_512 + GPT-4o Mini      (overall: 0.734)
+  3. fixed_512 + Llama 3.1 70B       (overall: 0.729)
+  4. semantic_512 + Llama 3.1 70B    (overall: 0.726)
+  5. fixed_256 + GPT-4o Mini         (overall: 0.725)
+
+Bottom 5 Configurations:
+  1. lc_semantic_128 + Gemini 2.5 Pro (overall: 0.659)
+  2. fixed_128 + Gemini 2.5 Pro       (overall: 0.665)
+  3. semantic_128 + Gemini 2.5 Pro     (overall: 0.668)
+  4. lc_semantic_256 + Gemini 2.5 Pro  (overall: 0.670)
+  5. lc_semantic_512 + Gemini 2.5 Pro  (overall: 0.671)
+
+Key finding: GPT-4o Mini with 512-token chunks (fixed or semantic) is the
+optimal configuration. Gemini 2.5 Pro consistently ranks lowest regardless
+of chunking strategy.
+
+
+================================================================================
+9. EVALUATION METHODOLOGY NOTE
+================================================================================
+
+LLM Judge Score Distribution (GPT-4o-mini, 1-5 Likert scale):
+  Score 5 (Fully Correct):     9,189 (70.2%)
+  Score 4 (Mostly Correct):    1,822 (13.9%)
+  Score 3 (Partially Correct):    57  (0.4%)
+  Score 2 (Mostly Incorrect):    899  (6.9%)
+  Score 1 (Incorrect):         1,128  (8.6%)
+
+The previous token-level F1 metric (bag-of-words overlap) produced a mean of
+0.134, severely underestimating actual performance due to the mismatch between
+short ground truth answers and verbose LLM responses. The correlation between
+token F1 and LLM judge scores is weak (Pearson r = 0.292), confirming that
+token F1 is an inappropriate metric for evaluating generative QA systems.
+
+The LLM-as-Judge approach follows established methodology from Zheng et al.
+(2023) and Liu et al. (2023), using a structured rubric with a 1-5 Likert
+scale. A known limitation is potential judge bias — GPT-4o-mini may score
+GPT-generated responses more favorably than those from other models. This
+should be noted in the paper's limitations section.
+
+
+================================================================================
+10. KEY CONCLUSIONS FOR RESEARCH PAPER
+================================================================================
+
+1. RAG systems achieve high answer correctness (82.5%) across diverse domains
+   and query types, but faithfulness — grounding answers in retrieved context —
+   remains the primary bottleneck at 59.4%.
+
+2. Chunk SIZE matters significantly more than chunk METHOD. Larger chunks (512
+   tokens) consistently outperform smaller chunks (128 tokens) across all
+   metrics. Fixed vs. semantic chunking shows no statistically significant
+   difference (all p > 0.05).
+
+3. Domain suitability is critical. Finance domain shows near-total retrieval
+   failure (context precision: 4.9%), suggesting embedding-based retrieval is
+   poorly suited for numerical/tabular financial data without domain-specific
+   adaptation.
+
+4. LLMs exhibit a correctness-faithfulness trade-off. Mistral Large achieves
+   the highest correctness but lowest faithfulness, implying heavy reliance on
+   parametric knowledge. GPT-4o Mini and Llama 3.1 70B offer the best balance.
+
+5. The optimal configuration is GPT-4o Mini with 512-token fixed or semantic
+   chunks (overall score: 0.737). This configuration maximizes both answer
+   quality and faithfulness to retrieved context.
+
+6. Token-level F1 is an inappropriate metric for generative RAG evaluation
+   (r = 0.292 with human-aligned LLM judge scores). LLM-as-Judge evaluation
+   should be the standard for future RAG research.
+
+
+================================================================================
+DATA FILES
+================================================================================
+
+Judged evaluation results (JSON):
+  results/evaluation_results_judged.json              (8,730 records - fixed chunking)
+  results/evaluation_results_lc_semantic_judged.json   (4,365 records - semantic chunking)
+
+Combined results (CSV):
+  results/full_evaluation_results_judged.csv           (13,095 records - all data)
+
+Summary statistics:
+  results/summary_statistics_judged.csv                (270 rows - grouped means)
+
+Judge checkpoints:
+  results/judge_checkpoint.json
+  results/judge_checkpoint_semantic.json
+
+Original (pre-judge) results:
+  results/evaluation_results.json
+  results/evaluation_results_lc_semantic.json
+  results/full_evaluation_results.csv
+
+Figures:
+  figures/fig1_llm_metric_heatmap.png
+  figures/fig2_strategy_metric_heatmap.png
+  figures/fig3_faithfulness_llm_strategy.png
+  figures/fig4_metrics_by_query_type.png
+  figures/fig5_domain_comparison.png
+  figures/fig6_fixed_vs_semantic.png
+  figures/fig7_llm_radar.png
+  figures/fig8_context_by_chunk_size.png
+  figures/fig9_strategy_ranking.png

@@ -177,7 +177,8 @@ def evaluate_with_metrics(results: list[dict], llm_name: str) -> list[dict]:
             "dataset": r["dataset"],
             "strategy": r["strategy"],
             "llm": llm_name,
-            "f1_score": compute_f1(response, r["ground_truth"]),
+            "token_f1": compute_f1(response, r["ground_truth"]),
+            "f1_score": None,  # Populated by llm_judge.py
         }
 
         if ragas_results and idx < len(ragas_results):
