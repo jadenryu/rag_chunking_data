@@ -1,0 +1,52 @@
+================================================================================
+ANOVA RESULTS SUMMARY FOR RAG CHUNKING RESEARCH
+================================================================================
+
+KEY FINDINGS:
+
+1. DOMAIN is the dominant factor across all metrics.
+   - Answer Correctness: eta2 = 17.96% (F=838.21, p<0.001)
+   - Faithfulness:       eta2 = 15.20% (F=693.05, p<0.001)
+   - Context Precision:  eta2 = 86.07% (F=23656, p<0.001)
+   - Context Recall:     eta2 = 78.10% (F=13721, p<0.001)
+
+2. QUERY TYPE is the second strongest factor (general domain).
+   - Answer Correctness: eta2 = 4.32%  (F=129.36, p<0.001)
+   - Faithfulness:       eta2 = 3.80%  (F=115.22, p<0.001)
+   - Context Precision:  eta2 = 59.69% (F=4288.39, p<0.001)
+   - Context Recall:     eta2 = 65.67% (F=5554.78, p<0.001)
+
+3. CHUNK SIZE has a small but significant effect.
+   - Answer Correctness: eta2 = 0.14%  (F=6.63, p=0.001)
+   - Faithfulness:       eta2 = 1.10%  (F=51.11, p<0.001)
+   - Context Precision:  eta2 = 0.12%  (F=13.13, p<0.001)
+   - Context Recall:     eta2 = 0.13%  (F=16.13, p<0.001)
+
+4. CHUNK METHOD (fixed vs semantic) is NOT significant for correctness.
+   - Answer Correctness: F=0.31, p=0.736 (ns)
+   - Faithfulness:       F=57.05, p<0.001 (significant but eta2=0.85%)
+   - The method effect on faithfulness is statistically significant but
+     practically negligible (<1% of variance).
+
+5. SIGNIFICANT INTERACTIONS:
+   - Chunk Size x Domain (faithfulness): eta2=0.30%, p<0.001
+     Larger chunks help more in some domains than others.
+   - Chunk Method x Query Type (correctness): eta2=0.21%, p=0.004
+     Chunking method matters slightly more for certain query types.
+   - Chunk Size x Query Type (faithfulness): eta2=0.26%, p<0.001
+     Chunk size effect on faithfulness varies by query complexity.
+
+6. THREE-WAY INTERACTIONS: Not significant for any metric (all p>0.05).
+   The effects of chunk method and size do not jointly depend on
+   domain or query type.
+
+INTERPRETATION FOR RESEARCH QUESTION:
+The data shows that chunking strategy optimization has a statistically
+significant but practically small effect on RAG performance. Domain
+(eta2=18-86%) and query type (eta2=4-66%) explain orders of magnitude
+more variance than any chunking parameter (eta2<1.2%). Chunk size is
+the only chunking parameter with consistent significance, while chunk
+method (fixed vs semantic) does not significantly affect answer
+correctness. This suggests that optimizing chunking alone is insufficient
+— domain adaptation and query-type-aware retrieval strategies would
+yield far greater improvements.
