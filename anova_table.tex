@@ -1,0 +1,44 @@
+% IEEE-format Type II ANOVA table
+% Factors: Chunk Size (df=2), Domain (df=2), Query Type (df=3), Chunk Method (df=1)
+% Significance: *** p<0.001, ** p<0.01, * p<0.05, ns = not significant
+
+\begin{table*}[!t]
+  \caption{Type II ANOVA: Variance Explained ($\eta^2$, \%) and $F$-Statistics for Each Factor Across Four RAG Evaluation Metrics}
+  \label{tab:anova}
+  \centering
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabular}{llrrrrl}
+    \hline
+    \textbf{Metric} & \textbf{Factor} & \textbf{\textit{df}} & \textbf{\textit{MS}} & \textbf{\textit{F}} & \textbf{$\eta^2$ (\%)} & \textbf{\textit{p}} \\
+    \hline
+    \multirow{4}{*}{LLM Judge Score}
+      & Chunk Size   & 2 & 0.635 &   6.746 &  0.14 & $< 0.01$** \\
+      & Domain       & 2 & 43.110 & 458.300 &  9.28 & $< 0.001$*** \\
+      & Query Type   & 3 &  7.199 &  76.533 &  2.32 & $< 0.001$*** \\
+      & Chunk Method & 1 &  0.024 &   0.251 &  0.00 & $0.616$\phantom{***} \\
+    \hline
+    \multirow{4}{*}{Faithfulness}
+      & Chunk Size   & 2 &  0.419 &   5.885 &  0.13 & $< 0.01$** \\
+      & Domain       & 2 &  6.433 &  90.401 &  2.06 & $< 0.001$*** \\
+      & Query Type   & 3 &  2.499 &  35.119 &  1.20 & $< 0.001$*** \\
+      & Chunk Method & 1 &  0.251 &   3.531 &  0.04 & $0.060$\phantom{***} \\
+    \hline
+    \multirow{4}{*}{Context Precision}
+      & Chunk Size   & 2 &  3.030 &  20.024 &  0.38 & $< 0.001$*** \\
+      & Domain       & 2 & 79.045 & 522.396 &  9.79 & $< 0.001$*** \\
+      & Query Type   & 3 & 54.320 & 358.990 & 10.09 & $< 0.001$*** \\
+      & Chunk Method & 1 &  4.179 &  27.618 &  0.26 & $< 0.001$*** \\
+    \hline
+    \multirow{4}{*}{Context Recall}
+      & Chunk Size   & 2 &  0.645 &   5.669 &  0.06 & $< 0.01$** \\
+      & Domain       & 2 & 366.616 & 3221.120 & 33.70 & $< 0.001$*** \\
+      & Query Type   & 3 & 161.085 & 1415.309 & 22.21 & $< 0.001$*** \\
+      & Chunk Method & 1 &  2.439 &  21.425 &  0.11 & $< 0.001$*** \\
+    \hline
+  \end{tabular}
+  \begin{tablenotes}
+    \small
+    \item Type II sum of squares. Significance: ***\,$p < 0.001$; **\,$p < 0.01$; *\,$p < 0.05$; ns\,$p \geq 0.05$.
+    $\eta^2$ is the percentage of total variance explained by each factor.
+  \end{tablenotes}
+\end{table*}

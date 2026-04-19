@@ -1,0 +1,28 @@
+% Pairwise Welch's t-tests between query types, per metric
+% Cohen's d < 0.2 = trivial, 0.2-0.5 = small, 0.5-0.8 = medium, >0.8 = large
+
+\begin{table}[!t]
+  \caption{Pairwise Comparison of Query Types on LLM Judge Score (Welch's $t$-Test, All Chunk Sizes Pooled)}
+  \label{tab:querytype_pairwise}
+  \centering
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabular}{lccccc}
+    \hline
+    \textbf{Comparison} & \textbf{Mean A} & \textbf{Mean B} & \textbf{\textit{p}} & \textbf{\textit{d}} \\
+    \hline
+    Single-Hop vs.\ Multi-Hop & 0.830 & 0.817 & $0.138$\phantom{***} & 0.042 \\
+    Single-Hop vs.\ Comparative & 0.830 & 0.835 & $0.674$\phantom{***} & -0.016 \\
+    Single-Hop vs.\ Unanswerable & 0.830 & 0.795 & $0.002$** & 0.113 \\
+    Multi-Hop vs.\ Comparative & 0.817 & 0.835 & $0.182$\phantom{***} & -0.054 \\
+    Multi-Hop vs.\ Unanswerable & 0.817 & 0.795 & $0.098$\phantom{***} & 0.065 \\
+    Comparative vs.\ Unanswerable & 0.835 & 0.795 & $0.009$** & 0.125 \\
+    \hline
+  \end{tabular}
+  \begin{tablenotes}
+    \small
+    \item Mean A and Mean B are group means across all chunk sizes.
+    $d$ = Cohen's $d$ (effect size, sign indicates direction).
+    Significance: ***\,$p < 0.001$; **\,$p < 0.01$; *\,$p < 0.05$;
+    unlabelled $p$-values are non-significant ($p \geq 0.05$).
+  \end{tablenotes}
+\end{table}
