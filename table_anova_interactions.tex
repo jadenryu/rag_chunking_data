@@ -1,0 +1,24 @@
+% Type II ANOVA -- LLM Judge Score, chunk size + domain + query type only
+
+\begin{table}[!t]
+  \caption{Type II ANOVA of LLM Judge Score}
+  \label{tab:anova_interactions}
+  \centering
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabular}{lrrrrr}
+    \hline
+    \textbf{Source} & \textbf{\textit{SS}} & \textbf{\textit{df}} & \textbf{\textit{F}} & \textbf{\textit{p}} & \boldmath$\eta^2$ \\
+    \hline
+    Chunk Size  & 1.269 & 2 & 6.747 & $0.001$** & 0.0014 \\
+    Domain      & 86.220 & 2 & 458.343 & $<0.001$*** & 0.0928 \\
+    Query Type  & 21.597 & 3 & 76.539 & $<0.001$*** & 0.0232 \\
+    \hline
+    Residual    & 820.266 & 8721 & --- & --- & --- \\
+    \hline
+  \end{tabular}
+  \begin{tablenotes}
+    \small
+    \item Type II ANOVA, $N = 8{,}729$. $\eta^2$ = proportion of total variance explained.
+    Significance: ***\,$p < 0.001$; **\,$p < 0.01$; *\,$p < 0.05$.
+  \end{tablenotes}
+\end{table}
