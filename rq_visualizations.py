@@ -50,7 +50,7 @@ KEY_METRICS = ["f1_score", "faithfulness", "context_precision", "context_recall"
 
 
 def load_data():
-    df = pd.read_csv("results/full_evaluation_results_judged.csv")
+    df = pd.read_csv("results/evaluation_results_judged.csv")
     df["chunk_method"] = df["strategy"].apply(lambda s: s.rsplit("_", 1)[0])
     df["chunk_method_label"] = df["chunk_method"].map({
         "fixed": "Fixed", "semantic": "Semantic"

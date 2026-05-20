@@ -53,6 +53,18 @@ DATASETS = {
         "split": "validation",
         "domain": "finance",
     },
+    "pubmedqa_artificial": {
+        "hf_path": "qiaojin/PubMedQA",
+        "hf_name": "pqa_artificial",
+        "split": "train",
+        "domain": "medical",
+    },
+    "financebench": {
+        "hf_path": "PatronusAI/financebench",
+        "hf_name": None,
+        "split": "train",
+        "domain": "finance",
+    },
     "multihop_rag": {
         "hf_path": "yixuantt/MultiHop-RAG",
         "hf_name": None,

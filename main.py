@@ -21,9 +21,21 @@ def step_load_datasets(args):
     print("STEP 1: Loading Datasets")
     print("=" * 60)
 
-    records = load_all_datasets(max_per_dataset=args.max_queries)
+    datasets = [d.strip() for d in args.datasets.split(",")] if args.datasets else None
+    records = load_all_datasets(max_per_dataset=args.max_queries, datasets=datasets)
+
+    if getattr(args, "append", False):
+        try:
+            existing = load_processed_dataset()
+            existing_keys = {(r["question"], r["dataset"]) for r in existing}
+            new_records = [r for r in records if (r["question"], r["dataset"]) not in existing_keys]
+            records = existing + new_records
+            print(f"\nAppended {len(new_records)} new records to {len(existing)} existing records")
+        except FileNotFoundError:
+            print("\nNo existing dataset found, saving fresh.")
+
     save_processed_dataset(records)
-    print(f"\nLoaded {len(records)} total records")
+    print(f"\nTotal records saved: {len(records)}")
     return records
 
 
@@ -113,6 +125,9 @@ def step_generate(args):
 
     records = load_processed_dataset()
     records = [r for r in records if r.get("context")]
+    if args.datasets:
+        target = [d.strip() for d in args.datasets.split(",")]
+        records = [r for r in records if r["dataset"] in target]
 
     pipeline = RAGPipeline()
     results_path = os.path.join(config.RESULTS_DIR, "rag_results.json")
@@ -198,6 +213,17 @@ def main():
         action="store_true",
         help="Recreate Qdrant collections (delete existing)",
     )
+    parser.add_argument(
+        "--datasets",
+        type=str,
+        default=None,
+        help="Comma-separated dataset names to load (e.g. 'pubmedqa_artificial,financebench')",
+    )
+    parser.add_argument(
+        "--append",
+        action="store_true",
+        help="Append new records to existing processed_dataset.json instead of overwriting",
+    )
 
     args = parser.parse_args()
 
@@ -211,7 +237,7 @@ def main():
     if not config.QDRANT_API_KEY:
         missing.append("QDRANT_API_KEY")
 
-    if missing and args.step not in ["analyze"]:
+    if missing and args.step not in ["analyze", "load", "classify"]:
         print(f"ERROR: Missing environment variables: {', '.join(missing)}")
         print("Please set them in your .env file")
         sys.exit(1)

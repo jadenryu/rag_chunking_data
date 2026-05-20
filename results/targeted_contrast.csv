@@ -1,0 +1,2 @@
+finance_mean,finance_sd,finance_n,general_mean,general_sd,general_n,t_stat,welch_df,p_value,cohens_d,direction_confirmed
+-0.120448,0.524246,1600,0.025174,0.364647,2992,-9.903488,2445.9,0.0,-0.322492,False

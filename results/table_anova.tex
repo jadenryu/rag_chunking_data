@@ -1,0 +1,14 @@
+\begin{table}[h]
+\centering
+\caption{Type III ANOVA Results for LLM-as-Judge Score. Main effects only; interaction terms were excluded due to empty cells arising from domain--query-type confounding (medical and finance domains contain only single-hop queries). $\eta^2_p$ = partial eta squared.}
+\label{tab:anova}
+\begin{tabular}{lrrrrl}
+\toprule
+\textbf{Effect} & \textbf{F} & \textbf{df\textsubscript{num}} & \textbf{df\textsubscript{den}} & \textbf{p} & $\boldsymbol{\eta^2_p}$ \\
+\midrule
+Chunking strategy & 3.63 & 5 & 6336 & .003 & .003 (negligible) \\
+Query type        & 30.73 & 3 & 6336 & <.001 & .014 (small) \\
+Domain            & 397.66 & 2 & 6336 & <.001 & .112 (medium) \\
+\bottomrule
+\end{tabular}
+\end{table}

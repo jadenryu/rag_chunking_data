@@ -1,0 +1,36 @@
+metric,effect,F,df_num,df_den,p_value,partial_eta_sq,significant,flagged_unbalanced
+context_precision,chunking_strategy,32.2821,5,7555,0.0,0.020918,True,False
+context_precision,query_type,312.3655,3,7555,0.0,0.110349,True,False
+context_precision,domain,1163.3282,2,7555,0.0,0.235452,True,False
+context_precision,chunking_strategy × query_type,1.6264,15,7530,0.164549,0.003229,False,True
+context_precision,chunking_strategy × domain,1.6227,10,7530,0.165499,0.00215,False,True
+context_precision,query_type × domain,1.6273,6,7530,0.164331,0.001295,False,True
+context_precision,chunking_strategy × query_type × domain,2.169,30,7530,0.089482,0.008567,False,True
+context_recall,chunking_strategy,11.9006,5,6700,0.0,0.008803,True,False
+context_recall,query_type,108.9314,2,6700,0.0,0.031493,True,False
+context_recall,domain,1997.8788,2,6700,0.0,0.373583,True,False
+context_recall,chunking_strategy × query_type,1.1912,10,6680,0.312388,0.00178,False,True
+context_recall,chunking_strategy × domain,1.1913,10,6680,0.312359,0.00178,False,True
+context_recall,query_type × domain,0.5158,4,6680,0.671395,0.000309,False,True
+context_recall,chunking_strategy × query_type × domain,1.5884,20,6680,0.189922,0.004733,False,True
+faithfulness,chunking_strategy,6.485,5,7526,5e-06,0.00429,True,False
+faithfulness,query_type,39.5861,3,7526,0.0,0.015535,True,False
+faithfulness,domain,173.4976,2,7526,0.0,0.044074,True,False
+faithfulness,chunking_strategy × query_type,0.4935,15,7501,0.740567,0.000986,False,True
+faithfulness,chunking_strategy × domain,0.4935,10,7501,0.740521,0.000658,False,True
+faithfulness,query_type × domain,0.5522,6,7501,0.697397,0.000442,False,True
+faithfulness,chunking_strategy × query_type × domain,0.4931,30,7501,0.740853,0.001968,False,True
+answer_correctness,chunking_strategy,8.1593,5,7568,0.0,0.005362,True,False
+answer_correctness,query_type,107.3204,3,7568,0.0,0.040806,True,False
+answer_correctness,domain,121.3899,2,7568,0.0,0.031083,True,False
+answer_correctness,chunking_strategy × query_type,0.9939,15,7543,0.409401,0.001973,False,True
+answer_correctness,chunking_strategy × domain,0.9938,10,7543,0.409447,0.001316,False,True
+answer_correctness,query_type × domain,0.2751,6,7543,0.894199,0.000219,False,True
+answer_correctness,chunking_strategy × query_type × domain,0.9936,30,7543,0.409552,0.003936,False,True
+llm_as_judge,chunking_strategy,3.6271,5,6336,0.002807,0.002854,True,False
+llm_as_judge,query_type,30.7342,3,6336,0.0,0.014343,True,False
+llm_as_judge,domain,397.6637,2,6336,0.0,0.111526,True,False
+llm_as_judge,chunking_strategy × query_type,1.3027,15,6311,0.266453,0.003087,False,True
+llm_as_judge,chunking_strategy × domain,1.3041,10,6311,0.265932,0.002062,False,True
+llm_as_judge,query_type × domain,1.3138,6,6311,0.262223,0.001248,False,True
+llm_as_judge,chunking_strategy × query_type × domain,1.2944,30,6311,0.269678,0.006115,False,True

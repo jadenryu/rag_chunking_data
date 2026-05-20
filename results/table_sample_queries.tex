@@ -1,0 +1,65 @@
+\begin{table}[h]
+\centering
+\caption{Representative sample queries drawn from the six benchmark datasets.
+Each row shows one question--answer pair as presented to the RAG pipeline.
+``N/A'' denotes unanswerable items for which no reference answer exists.
+Medical answers are truncated for brevity; full long-form answers were used
+during evaluation.}
+\label{tab:sample_queries}
+\small
+\begin{tabular}{p{2.2cm} l p{1.8cm} p{5.5cm} p{2.8cm}}
+\toprule
+\textbf{Dataset} & \textbf{Domain} & \textbf{Query Type} & \textbf{Question} & \textbf{Reference Answer} \\
+\midrule
+
+HotpotQA
+  & General
+  & Comparative
+  & Were Scott Derrickson and Ed Wood of the same nationality?
+  & Yes \\[4pt]
+
+HotpotQA
+  & General
+  & Multi-hop
+  & What government position was held by the woman who portrayed Corliss Archer in the film \textit{Kiss and Tell}?
+  & Chief of Protocol \\[4pt]
+
+SQuAD v2
+  & General
+  & Single-hop
+  & In what country is Normandy located?
+  & France \\[4pt]
+
+SQuAD v2
+  & General
+  & Unanswerable
+  & Who gave their name to Normandy in the 1000s and 1100s?
+  & N/A \\[4pt]
+
+PubMedQA
+  & Medical
+  & Single-hop
+  & Do mitochondria play a role in remodelling lace plant leaves during programmed cell death?
+  & Yes --- mitochondrial dynamics were observed to progress as PCD advanced \ldots \\[4pt]
+
+PubMedQA (artif.)
+  & Medical
+  & Single-hop
+  & Are group 2 innate lymphoid cells (ILC2s) increased in chronic rhinosinusitis with nasal polyps or eosinophilia?
+  & Yes --- ILC2s are elevated in CRSwNP and may drive nasal polyp formation \ldots \\[4pt]
+
+FinQA
+  & Finance
+  & Single-hop
+  & What is the average payment volume per transaction for American Express?
+  & 127.40 \\[4pt]
+
+FinanceBench
+  & Finance
+  & Single-hop
+  & What is the FY2018 capital expenditure amount (in USD millions) for 3M?
+  & \$1{,}577.00 \\
+
+\bottomrule
+\end{tabular}
+\end{table}

@@ -112,7 +112,7 @@ def _enrich(df):
     df = df.copy()
     df["chunk_method"] = df["strategy"].apply(lambda s: s.rsplit("_", 1)[0])
     df["chunk_method_label"] = df["chunk_method"].map(
-        {"fixed": "Fixed", "lc_semantic": "LC Semantic"}
+        {"fixed": "Fixed", "semantic": "Semantic"}
     )
     df["chunk_size"] = df["strategy"].apply(lambda s: int(s.rsplit("_", 1)[1]))
     df["domain_label"] = df["domain"].str.title()
@@ -129,13 +129,13 @@ def _enrich(df):
 
 def load_data():
     """Fixed (128/256/512) + LC Semantic (128/256/512) with proper RAGAS metrics."""
-    df = pd.read_csv("results/ragas_evaluation.csv")
+    df = pd.read_csv("results/evaluation_results_judged.csv")
     df = _enrich(df)
     # Cast all non-numeric columns to plain object dtype (patsy/statsmodels compatibility)
     for col in df.columns:
         if not pd.api.types.is_numeric_dtype(df[col]):
             df[col] = df[col].astype(object)
-    assert set(df["chunk_method"].unique()) == {"fixed", "lc_semantic"}, \
+    assert set(df["chunk_method"].unique()) == {"fixed", "semantic"}, \
         "Unexpected strategies in dataset"
     return df
 
@@ -339,7 +339,7 @@ def fig4_fixed_vs_lc_semantic():
     ax.set_ylim(ymin, ymax + head * 1.6)
     for j, cs in enumerate(sizes):
         a = df[(df["chunk_method"] == "fixed")       & (df["chunk_size"] == cs)][metric].dropna()
-        b = df[(df["chunk_method"] == "lc_semantic") & (df["chunk_size"] == cs)][metric].dropna()
+        b = df[(df["chunk_method"] == "semantic") & (df["chunk_size"] == cs)][metric].dropna()
         if len(a) > 1 and len(b) > 1:
             _, p = stats.ttest_ind(a, b, equal_var=False)
             bx_y = ymax + head * 0.5
@@ -390,7 +390,7 @@ def fig5_chunksize_context_quality():
 
     for ax, metric in zip(axes, ["context_precision", "context_recall"]):
         for method in METHOD_ORDER:
-            key   = "fixed" if method == "Fixed" else "lc_semantic"
+            key   = "fixed" if method == "Fixed" else "semantic"
             sub   = df[df["chunk_method"] == key]
             means = sub.groupby("chunk_size")[metric].mean()
             sems  = sub.groupby("chunk_size")[metric].sem()
@@ -730,7 +730,7 @@ def fig6_fixed_vs_semantic():
 
         for j, cs in enumerate(sizes):
             a = df[(df["chunk_method"] == "fixed")       & (df["chunk_size"] == cs)][metric].dropna()
-            b = df[(df["chunk_method"] == "lc_semantic") & (df["chunk_size"] == cs)][metric].dropna()
+            b = df[(df["chunk_method"] == "semantic") & (df["chunk_size"] == cs)][metric].dropna()
             if len(a) > 1 and len(b) > 1:
                 _, p = stats.ttest_ind(a, b, equal_var=False)
                 d    = _cohens_d(a, b)
@@ -747,7 +747,7 @@ def fig6_fixed_vs_semantic():
             ax.legend(title="Method", frameon=True, fontsize=8, title_fontsize=8)
 
     n_f  = len(df[df["chunk_method"] == "fixed"])
-    n_lc = len(df[df["chunk_method"] == "lc_semantic"])
+    n_lc = len(df[df["chunk_method"] == "semantic"])
     plt.tight_layout()
     _save(fig, "fig6_fixed_vs_semantic.png")
 
@@ -765,7 +765,7 @@ def fig8_context_by_chunk_size():
 
     for ax, metric in zip(axes, ["context_precision", "context_recall"]):
         for method in METHOD_ORDER:
-            key   = "fixed" if method == "Fixed" else "lc_semantic"
+            key   = "fixed" if method == "Fixed" else "semantic"
             sub   = df[df["chunk_method"] == key]
             means = sub.groupby("chunk_size")[metric].mean()
             sems  = sub.groupby("chunk_size")[metric].sem()
@@ -949,7 +949,7 @@ def figE_metrics_chunksize_method():
 
     for ax, metric in zip(axes, metrics):
         for method in METHOD_ORDER:
-            key   = "fixed" if method == "Fixed" else "lc_semantic"
+            key   = "fixed" if method == "Fixed" else "semantic"
             sub   = df[df["chunk_method"] == key]
             means = sub.groupby("chunk_size")[metric].mean()
             sems  = sub.groupby("chunk_size")[metric].sem()
@@ -999,7 +999,7 @@ def figF_chunksize_domain_querytype_facet():
                 continue
 
             for method in METHOD_ORDER:
-                key   = "fixed" if method == "Fixed" else "lc_semantic"
+                key   = "fixed" if method == "Fixed" else "semantic"
                 msub  = sub[sub["chunk_method"] == key]
                 means = msub.groupby("chunk_size")["f1_score"].mean()
                 sems  = msub.groupby("chunk_size")["f1_score"].sem()

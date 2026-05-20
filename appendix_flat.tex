@@ -1,0 +1,392 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\title{Appendix}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\appendix
+
+\section{Dataset Details}
+\label{app:datasets}
+
+Table~\ref{tab:datasets} summarises the six benchmark datasets used in this study, and Table~\ref{tab:sample_queries} provides representative sample queries from each.
+All datasets were sampled to a maximum of 50 queries each, yielding 291 total
+query--context--answer triples after filtering records with empty context fields.
+Query-type labels were assigned automatically: HotpotQA and SQuAD v2 used
+metadata flags (\texttt{type} and \texttt{is\_impossible}) embedded in the
+dataset; all remaining datasets contain only single-hop questions as defined by
+their original design, confirmed by manual inspection of a random 20-item subset.
+
+\begin{table}[h]
+\centering
+\caption{Benchmark datasets included in the balanced evaluation corpus.}
+\label{tab:datasets}
+\begin{tabular}{llllr}
+\toprule
+\textbf{Dataset} & \textbf{Domain} & \textbf{Query Types} & \textbf{Source (HF path)} & \textbf{\textit{N}} \\
+\midrule
+HotpotQA           & General & Multi-hop, Comparative   & \texttt{hotpot\_qa/distractor}              & 50 \\
+SQuAD v2           & General & Single-hop, Unanswerable & \texttt{rajpurkar/SQuAD-v2.0}               & 50 \\
+PubMedQA (labeled) & Medical & Single-hop               & \texttt{qiaojin/PubMedQA/pqa\_labeled}      & 50 \\
+PubMedQA (artif.)  & Medical & Single-hop               & \texttt{qiaojin/PubMedQA/pqa\_artificial}   & 41$^{*}$ \\
+FinQA              & Finance & Single-hop               & \texttt{ibm/finqa}                          & 50 \\
+FinanceBench       & Finance & Single-hop               & \texttt{PatronusAI/financebench}            & 50 \\
+\midrule
+\multicolumn{4}{r}{\textbf{Total}} & \textbf{291} \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+{\small $^{*}$Nine records excluded due to empty context after preprocessing.}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Representative sample queries drawn from the six benchmark datasets.
+Each row shows one question--answer pair as presented to the RAG pipeline.
+``N/A'' denotes unanswerable items for which no reference answer exists.
+Medical answers are truncated for brevity; full long-form answers were used
+during evaluation.}
+\label{tab:sample_queries}
+\small
+\begin{tabular}{p{2.2cm} l p{1.8cm} p{5.5cm} p{2.8cm}}
+\toprule
+\textbf{Dataset} & \textbf{Domain} & \textbf{Query Type} & \textbf{Question} & \textbf{Reference Answer} \\
+\midrule
+
+HotpotQA
+  & General
+  & Comparative
+  & Were Scott Derrickson and Ed Wood of the same nationality?
+  & Yes \\[4pt]
+
+HotpotQA
+  & General
+  & Multi-hop
+  & What government position was held by the woman who portrayed Corliss Archer in the film \textit{Kiss and Tell}?
+  & Chief of Protocol \\[4pt]
+
+SQuAD v2
+  & General
+  & Single-hop
+  & In what country is Normandy located?
+  & France \\[4pt]
+
+SQuAD v2
+  & General
+  & Unanswerable
+  & Who gave their name to Normandy in the 1000s and 1100s?
+  & N/A \\[4pt]
+
+PubMedQA
+  & Medical
+  & Single-hop
+  & Do mitochondria play a role in remodelling lace plant leaves during programmed cell death?
+  & Yes --- mitochondrial dynamics were observed to progress as PCD advanced \ldots \\[4pt]
+
+PubMedQA (artif.)
+  & Medical
+  & Single-hop
+  & Are group 2 innate lymphoid cells (ILC2s) increased in chronic rhinosinusitis with nasal polyps or eosinophilia?
+  & Yes --- ILC2s are elevated in CRSwNP and may drive nasal polyp formation \ldots \\[4pt]
+
+FinQA
+  & Finance
+  & Single-hop
+  & What is the average payment volume per transaction for American Express?
+  & 127.40 \\[4pt]
+
+FinanceBench
+  & Finance
+  & Single-hop
+  & What is the FY2018 capital expenditure amount (in USD millions) for 3M?
+  & \$1{,}577.00 \\
+
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\section{Chunking Strategy Specifications}
+\label{app:chunking}
+
+Six chunking strategies were evaluated, combining two methods (fixed-size and
+semantic) with three token-budget sizes (128, 256, 512). Table~\ref{tab:chunking}
+provides full specifications. All token counts use the \texttt{cl100k\_base}
+tiktoken encoding (GPT-3/4 vocabulary). Fixed strategies produce non-overlapping
+windows; semantic strategies respect paragraph and sentence boundaries before
+falling back to fixed chunking for units that exceed the token budget.
+
+\begin{table}[h]
+\centering
+\caption{Chunking strategy specifications. ``Max tokens'' denotes the upper token
+limit per chunk; fixed strategies use exact-size windows with no overlap.}
+\label{tab:chunking}
+\begin{tabular}{llrrl}
+\toprule
+\textbf{Strategy} & \textbf{Method} & \textbf{Max tokens} & \textbf{Overlap} & \textbf{Boundary logic} \\
+\midrule
+\texttt{fixed\_128}    & Fixed    & 128 & 0   & Hard token window \\
+\texttt{fixed\_256}    & Fixed    & 256 & 0   & Hard token window \\
+\texttt{fixed\_512}    & Fixed    & 512 & 0   & Hard token window \\
+\texttt{semantic\_128} & Semantic & 128 & --- & Paragraph $\to$ sentence $\to$ fixed \\
+\texttt{semantic\_256} & Semantic & 256 & --- & Paragraph $\to$ sentence $\to$ fixed \\
+\texttt{semantic\_512} & Semantic & 512 & --- & Paragraph $\to$ sentence $\to$ fixed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{LLM-as-Judge Prompt}
+\label{app:judge_prompt}
+
+The following prompt was used verbatim for all LLM-as-judge evaluations.
+Scores were elicited at temperature 0 using \texttt{openai/gpt-4o-mini} via
+the OpenRouter API. Raw integer scores (1--5) were normalized to $[0, 1]$ by
+the transformation $s = (r - 1) / 4$.
+
+\begin{quote}
+\small\ttfamily\sloppy
+You are an expert evaluator assessing the correctness of a RAG system's answer.
+
+\medskip
+Task\\
+Rate how correctly the RESPONSE answers the QUESTION, compared to the REFERENCE ANSWER.
+
+\medskip
+Inputs\\
+- QUESTION: \{question\}\\
+- REFERENCE ANSWER: \{ground\_truth\}\\
+- RESPONSE: \{response\}
+
+\medskip
+Scoring Rubric (1--5)\\
+5 = The response contains the correct answer with the same essential information
+as the reference. Minor wording differences or additional correct elaboration
+are acceptable.\\
+4 = The response is correct but misses minor details from the reference, or adds
+minor inaccuracies alongside the correct answer.\\
+3 = Partially correct. Captures some key information but misses important
+details or includes significant inaccuracies.\\
+2 = Mostly incorrect. Attempts to answer but misses the main point or
+contradicts the reference on key facts.\\
+1 = Completely incorrect, does not answer the question, or contradicts the
+reference answer entirely.
+
+\medskip
+Important\\
+- Focus on SEMANTIC correctness, not lexical overlap.\\
+- A verbose response that contains the correct answer should score 5.\\
+- Short reference answers (e.g.\ ``yes'', ``no'', a name, a date): the response
+  must contain or clearly convey that answer.\\
+- If the question is unanswerable and the reference indicates this, a response
+  that appropriately declines should score highly.
+
+\medskip
+Respond with ONLY valid JSON: \{"score": \textless int 1--5\textgreater, "reasoning": "\textless one sentence\textgreater"\}
+\end{quote}
+
+\section{Query-Type Classification Prompt}
+\label{app:qt_prompt}
+
+For datasets without built-in query-type metadata, the following prompt was used
+to classify each question via \texttt{openai/gpt-4o-mini} at temperature 0.
+
+\begin{quote}
+\small\ttfamily\sloppy
+Classify the following question into exactly one of these query types:\\
+single-hop, multi-hop, comparative, unanswerable.\\
+A single-hop question requires one fact.\\
+A multi-hop question requires combining facts from multiple sources.\\
+A comparative question requires comparing two or more entities.\\
+An unanswerable question cannot be answered from typical reference material.\\
+Respond with ONLY the query type label.
+
+\medskip
+Question: \{query\}
+\end{quote}
+
+\section{RAGAS Metric Definitions}
+\label{app:ragas}
+
+Four retrieval and generation metrics were computed using the RAGAS
+framework \cite{ragas2023} alongside the LLM-as-judge score. All RAGAS
+metrics are bounded $[0, 1]$ (higher = better).
+
+\begin{description}
+  \item[Faithfulness] Proportion of claims in the generated answer that are
+    directly supported by the retrieved context. Computed by decomposing the
+    answer into atomic claims and checking each against the context with an LLM
+    verifier.
+  \item[Answer Relevancy] Cosine similarity between the embedding of the
+    question and embeddings of synthetic questions reverse-engineered from the
+    answer. Measures whether the answer actually addresses the question asked.
+  \item[Context Precision] Mean reciprocal rank of relevant context chunks
+    among the top-$k$ retrieved chunks, weighted by position. Measures how
+    highly the retriever ranks the most relevant passages.
+  \item[Context Recall] Fraction of ground-truth answer claims that can be
+    attributed to the retrieved context. Measures retrieval completeness.
+\end{description}
+
+\section{Full ANOVA Results}
+\label{app:anova}
+
+\begin{table}[h]
+\centering
+\caption{Type III ANOVA Results for LLM-as-Judge Score. Main effects only; interaction terms were excluded due to empty cells arising from domain--query-type confounding (medical and finance domains contain only single-hop queries). $\eta^2_p$ = partial eta squared.}
+\label{tab:anova}
+\begin{tabular}{lrrrrl}
+\toprule
+\textbf{Effect} & \textbf{F} & \textbf{df\textsubscript{num}} & \textbf{df\textsubscript{den}} & \textbf{p} & $\boldsymbol{\eta^2_p}$ \\
+\midrule
+Chunking strategy & 3.63 & 5 & 6336 & .003 & .003 (negligible) \\
+Query type        & 30.73 & 3 & 6336 & <.001 & .014 (small) \\
+Domain            & 397.66 & 2 & 6336 & <.001 & .112 (medium) \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\section{Tukey HSD Post-Hoc Tables}
+\label{app:tukey}
+
+\begin{table}[h]
+\centering
+\caption{Tukey HSD post-hoc pairwise comparisons by domain for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit{d} computed using pooled SD. ns = not significant.}
+\label{tab:tukey_domain}
+\begin{tabular}{llrrrl}
+\toprule
+\textbf{Group A} & \textbf{Group B} & \textbf{Mean Diff} & \textbf{95\% CI} & \textbf{\textit{d}} & \textbf{\textit{p}$_{\text{adj}}$} \\
+\midrule
+General & Finance & $+$0.257 & [$+$0.234, $+$0.281] & 0.689 & $<$.001 \\
+Medical & Finance & $+$0.271 & [$+$0.245, $+$0.298] & 0.776 & $<$.001 \\
+General & Medical & $-$0.014 & [$-$0.037,\hphantom{$-$}0.009] & 0.053 & .334 \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\begin{table}[h]
+\centering
+\caption{Tukey HSD post-hoc pairwise comparisons by query type for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit{d} computed using pooled SD. ns = not significant.}
+\label{tab:tukey_querytype}
+\begin{tabular}{llrrrl}
+\toprule
+\textbf{Group A} & \textbf{Group B} & \textbf{Mean Diff} & \textbf{95\% CI} & \textbf{\textit{d}} & \textbf{\textit{p}$_{\text{adj}}$} \\
+\midrule
+Comparative & Multi-hop    & $+$0.071 & [$+$0.021,\hphantom{$+$}0.121] & 0.251 & .002 \\
+Comparative & Single-hop   & $+$0.148 & [$+$0.103,\hphantom{$+$}0.193] & 0.471 & $<$.001 \\
+Comparative & Unanswerable & $+$0.126 & [$+$0.074,\hphantom{$+$}0.178] & 0.436 & $<$.001 \\
+Multi-hop   & Single-hop   & $+$0.077 & [$+$0.047,\hphantom{$+$}0.107] & 0.228 & $<$.001 \\
+Multi-hop   & Unanswerable & $+$0.055 & [$+$0.015,\hphantom{$+$}0.094] & 0.175 & .002 \\
+Single-hop  & Unanswerable & $+$0.022 & [$-$0.011,\hphantom{$+$}0.055] & 0.065 & .307 \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\begin{table}[h]
+\centering
+\caption{Tukey HSD post-hoc pairwise comparisons by chunking strategy for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit{d} computed using pooled SD. All significant pairs involve \texttt{fixed\_128} as the lower-scoring group; effect sizes are negligible throughout ($d < 0.20$), consistent with the small ANOVA $\eta^2_p = .003$.}
+\label{tab:tukey_strategy}
+\begin{tabular}{llrrrl}
+\toprule
+\textbf{Group A} & \textbf{Group B} & \textbf{Mean Diff} & \textbf{95\% CI} & \textbf{\textit{d}} & \textbf{\textit{p}$_{\text{adj}}$} \\
+\midrule
+\texttt{fixed\_256}   & \texttt{fixed\_128}   & $+$0.042 & [$+$0.000,\hphantom{$+$}$+$0.084] & 0.122 & .049 \\
+\texttt{fixed\_512}   & \texttt{fixed\_128}   & $+$0.042 & [$+$0.000,\hphantom{$+$}$+$0.084] & 0.122 & .049 \\
+\texttt{semantic\_128} & \texttt{fixed\_128}  & $+$0.043 & [$+$0.001,\hphantom{$+$}$+$0.085] & 0.124 & .046 \\
+\texttt{semantic\_256} & \texttt{fixed\_128}  & $+$0.056 & [$+$0.013,\hphantom{$+$}$+$0.099] & 0.163 & .003 \\
+\texttt{semantic\_512} & \texttt{fixed\_128}  & $+$0.054 & [$+$0.011,\hphantom{$+$}$+$0.097] & 0.158 & .004 \\
+\midrule
+\texttt{fixed\_512}   & \texttt{fixed\_256}   & $+$0.000 & [$-$0.042,\hphantom{$-$}$+$0.042] & 0.000 & 1.000 \\
+\texttt{semantic\_128} & \texttt{fixed\_256}  & $+$0.001 & [$-$0.041,\hphantom{$-$}$+$0.043] & 0.003 & 1.000 \\
+\texttt{semantic\_256} & \texttt{fixed\_256}  & $+$0.014 & [$-$0.029,\hphantom{$-$}$+$0.057] & 0.041 & .936 \\
+\texttt{semantic\_512} & \texttt{fixed\_256}  & $+$0.012 & [$-$0.030,\hphantom{$-$}$+$0.055] & 0.036 & .963 \\
+\texttt{semantic\_128} & \texttt{fixed\_512}  & $+$0.001 & [$-$0.041,\hphantom{$-$}$+$0.043] & 0.003 & 1.000 \\
+\texttt{semantic\_256} & \texttt{fixed\_512}  & $+$0.014 & [$-$0.029,\hphantom{$-$}$+$0.057] & 0.041 & .936 \\
+\texttt{semantic\_512} & \texttt{fixed\_512}  & $+$0.012 & [$-$0.030,\hphantom{$-$}$+$0.055] & 0.036 & .963 \\
+\texttt{semantic\_256} & \texttt{semantic\_128} & $+$0.013 & [$-$0.030,\hphantom{$-$}$+$0.057] & 0.038 & .954 \\
+\texttt{semantic\_512} & \texttt{semantic\_128} & $+$0.012 & [$-$0.032,\hphantom{$-$}$+$0.055] & 0.033 & .975 \\
+\texttt{semantic\_512} & \texttt{semantic\_256} & $-$0.002 & [$-$0.046,\hphantom{$-$}$+$0.042] & 0.005 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+ 
+\section{Targeted Contrast: Finance vs.\ General Domain}
+\label{app:contrast}
+
+A Welch's \textit{t}-test was conducted on the difference score
+(LLM Judge $-$ Faithfulness) to isolate retrieval-generation divergence
+between the Finance and General domains. Results are reported in
+Table~\ref{tab:targeted_contrast}.
+
+\begin{table}[h]
+\centering
+\caption{Welch's \textit{t}-test: Finance vs.\ General on
+  (LLM Judge Score $-$ Faithfulness). Negative mean difference indicates
+  Finance scores are lower on this combined metric. Cohen's \textit{d}
+  computed using pooled SD.}
+\label{tab:targeted_contrast}
+\begin{tabular}{lrrrrrr}
+\toprule
+ & \textbf{Finance} $M$ & \textbf{Finance} $SD$
+ & \textbf{General} $M$ & \textbf{General} $SD$
+ & \textbf{\textit{t}} & \textbf{\textit{p}} \\
+\midrule
+Judge $-$ Faithful. & $-$0.120 & 0.524 & $+$0.025 & 0.365 & $-$9.90 & $<$.001 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+{\small $N_{\text{Finance}} = 1600$, $N_{\text{General}} = 2992$,
+Welch $df = 2445.9$, Cohen's $d = -0.322$ (small).}
+\end{table}
+
+This result indicates that in the Finance domain the LLM judge consistently
+awarded lower scores relative to faithfulness compared with the General domain,
+suggesting that Finance queries impose a correctness penalty beyond what
+retrieval quality alone explains---likely reflecting the numerical and
+domain-specific vocabulary demands of financial QA.
+
+\section{RAG Pipeline Overview}
+\label{app:pipeline}
+
+The end-to-end RAG evaluation pipeline proceeded as follows:
+
+\begin{enumerate}
+  \item \textbf{Document ingestion.} Each query's gold context passage was
+    chunked according to one of the six strategies
+    (Appendix~\ref{app:chunking}).
+  \item \textbf{Embedding and indexing.} Chunks were embedded with
+    \texttt{text-embedding-3-small} (OpenAI, $d = 1536$) and stored in a
+    Qdrant vector collection, one collection per strategy.
+  \item \textbf{Retrieval.} At inference time, the query was embedded with
+    the same model and the top-$k = 5$ nearest chunks were retrieved via
+    cosine similarity.
+  \item \textbf{Generation.} Five LLMs (GPT-4o-mini, Claude 3.5 Sonnet,
+    Gemini 2.5 Pro, Llama 3.1 70B, Mistral Large) generated answers from a
+    fixed prompt template: \textit{``Based on the context below, answer this
+    question: \{query\}$\backslash$n$\backslash$nContext:$\backslash$n\{context\}''}.
+  \item \textbf{Evaluation.} Each (question, context, answer) triple was
+    scored by the LLM-as-judge (Appendix~\ref{app:judge_prompt}) and by the
+    four RAGAS metrics (Appendix~\ref{app:ragas}), both using
+    \texttt{openai/gpt-4o-mini} via OpenRouter at temperature 0.
+\end{enumerate}
+
+All inference and evaluation calls were routed through the OpenRouter API.
+LLM responses were generated with default temperature settings per model.
+ 
+\begin{thebibliography}{9}
+\bibitem{ragas2023}
+Es Sadig, S., et al.\ (2023).
+\textit{RAGAS: Automated Evaluation of Retrieval Augmented Generation}.
+arXiv:2309.15217.
+\end{thebibliography}
+
+\end{document}

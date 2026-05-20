@@ -1,0 +1,9 @@
+\contentsline {section}{\numberline {A}Dataset Details}{2}{appendix.A}%
+\contentsline {section}{\numberline {B}Chunking Strategy Specifications}{2}{appendix.B}%
+\contentsline {section}{\numberline {C}LLM-as-Judge Prompt}{2}{appendix.C}%
+\contentsline {section}{\numberline {D}Query-Type Classification Prompt}{4}{appendix.D}%
+\contentsline {section}{\numberline {E}RAGAS Metric Definitions}{4}{appendix.E}%
+\contentsline {section}{\numberline {F}Full ANOVA Results}{5}{appendix.F}%
+\contentsline {section}{\numberline {G}Tukey HSD Post-Hoc Tables}{5}{appendix.G}%
+\contentsline {section}{\numberline {H}Targeted Contrast: Finance vs.\ General Domain}{5}{appendix.H}%
+\contentsline {section}{\numberline {I}RAG Pipeline Overview}{5}{appendix.I}%

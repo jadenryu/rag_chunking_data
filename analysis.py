@@ -8,7 +8,7 @@ import pandas as pd
 
 import config
 
-METRICS = ["f1_score", "token_f1", "answer_relevancy", "faithfulness", "context_precision", "context_recall"]
+METRICS = ["f1_score", "answer_relevancy", "faithfulness", "context_precision", "context_recall"]
 
 
 def load_results(filename: str = "evaluation_results.json") -> pd.DataFrame:
@@ -30,15 +30,16 @@ def plot_by_strategy(df: pd.DataFrame):
     strategies = sorted(df["strategy"].unique())
 
     for ax, metric in zip(axes, METRICS):
-        means = df.groupby("strategy")[metric].mean().reindex(strategies)
-        stds = df.groupby("strategy")[metric].std().reindex(strategies)
-        bars = ax.bar(range(len(strategies)), means, yerr=stds, capsize=3, alpha=0.8)
+        grouped = df.groupby("strategy")[metric]
+        means = grouped.mean().reindex(strategies)
+        cis = grouped.sem().reindex(strategies) * 1.96
+        bars = ax.bar(range(len(strategies)), means, yerr=cis, capsize=3, alpha=0.8)
         ax.set_xticks(range(len(strategies)))
-        ax.set_xticklabels(strategies, rotation=45, ha="right", fontsize=8)
-        ax.set_title(metric.replace("_", " ").title(), fontsize=10)
+        ax.set_xticklabels(strategies, rotation=45, ha="right", fontsize=11)
+        ax.set_title(metric.replace("_", " ").title(), fontsize=13)
         ax.set_ylim(0, 1)
 
-    fig.suptitle("Performance by Chunking Strategy", fontsize=14, y=1.02)
+    fig.suptitle("Performance by Chunking Strategy", fontsize=18, y=1.02)
     fig.tight_layout()
     _save_fig(fig, "performance_by_strategy")
 
@@ -103,9 +104,10 @@ def plot_by_llm(df: pd.DataFrame):
     fig, axes = plt.subplots(1, len(METRICS), figsize=(4 * len(METRICS), 5))
 
     for ax, metric in zip(axes, METRICS):
-        means = df.groupby("llm")[metric].mean().reindex(llms)
-        stds = df.groupby("llm")[metric].std().reindex(llms)
-        ax.bar(range(len(llms)), means, yerr=stds, capsize=3, alpha=0.8)
+        grouped = df.groupby("llm")[metric]
+        means = grouped.mean().reindex(llms)
+        cis = grouped.sem().reindex(llms) * 1.96
+        ax.bar(range(len(llms)), means, yerr=cis, capsize=3, alpha=0.8)
         ax.set_xticks(range(len(llms)))
         ax.set_xticklabels(llms, rotation=45, ha="right", fontsize=8)
         ax.set_title(metric.replace("_", " ").title(), fontsize=10)
@@ -131,7 +133,7 @@ def plot_heatmap_strategy_domain(df: pd.DataFrame):
         ax.set_xticklabels(domains)
         ax.set_yticks(range(len(strategies)))
         ax.set_yticklabels(strategies)
-        ax.set_title(f"{metric.replace('_', ' ').title()}: Strategy vs Domain")
+        ax.set_title(f"{metric.replace('_', ' ').title()}: Strategy vs Domain", fontsize=16)
 
         for i in range(len(strategies)):
             for j in range(len(domains)):
@@ -199,9 +201,18 @@ def print_summary(df: pd.DataFrame):
     print(f"\nFull summary saved to {csv_path}")
 
 
+BALANCED_DATASETS = {
+    "hotpotqa", "squad2",
+    "pubmedqa", "pubmedqa_artificial",
+    "financeqa", "financebench",
+}
+
+
 def run_all_analysis():
-    df = load_results()
+    df = load_results("evaluation_results_judged.json")
     print(f"Loaded {len(df)} evaluation records")
+    df = df[df["dataset"].isin(BALANCED_DATASETS)].copy()
+    print(f"Filtered to {len(df)} records ({', '.join(sorted(BALANCED_DATASETS))})")
 
     print("\nGenerating plots...")
     plot_by_strategy(df)

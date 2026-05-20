@@ -78,7 +78,7 @@ def load_summary():
 
 
 def load_raw():
-    df = pd.read_csv("results/full_evaluation_results_judged.csv")
+    df = pd.read_csv("results/evaluation_results_judged.csv")
     df["llm_short"] = df["llm"].map(LLM_SHORT)
     df["strategy_label"] = df["strategy"].map(STRATEGY_LABELS)
     df["chunk_method"] = df["strategy"].apply(lambda s: s.rsplit("_", 1)[0].title())
@@ -219,7 +219,7 @@ def fig4_metrics_by_query_type(raw):
         else:
             ax.legend(title="LLM", bbox_to_anchor=(1.02, 1), loc="upper left", frameon=True)
 
-    fig.suptitle("Key Metrics by Query Type (95% CI Error Bars)", y=1.02, fontsize=14, fontweight="bold")
+    fig.suptitle("Key Metrics by Query Type (95% CI Error Bars)", y=1.02, fontsize=18, fontweight="bold")
     plt.tight_layout()
     fig.savefig(f"{OUTPUT_DIR}/fig4_metrics_by_query_type.png")
     plt.close(fig)
@@ -256,7 +256,7 @@ def fig5_domain_comparison(raw):
         else:
             ax.legend(title="LLM", bbox_to_anchor=(1.02, 1), loc="upper left", frameon=True)
 
-    fig.suptitle("Key Metrics by Domain (95% CI Error Bars)", y=1.02, fontsize=14, fontweight="bold")
+    fig.suptitle("Key Metrics by Domain (95% CI Error Bars)", y=1.02, fontsize=18, fontweight="bold")
     plt.tight_layout()
     fig.savefig(f"{OUTPUT_DIR}/fig5_domain_comparison.png")
     plt.close(fig)

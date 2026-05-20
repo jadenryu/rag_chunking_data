@@ -1,0 +1,27 @@
+\begin{table}[h]
+\centering
+\caption{Tukey HSD post-hoc pairwise comparisons by chunking strategy for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit{d} computed using pooled SD. All significant pairs involve \texttt{fixed\_128} as the lower-scoring group; effect sizes are negligible throughout ($d < 0.20$), consistent with the small ANOVA $\eta^2_p = .003$.}
+\label{tab:tukey_strategy}
+\begin{tabular}{llrrrl}
+\toprule
+\textbf{Group A} & \textbf{Group B} & \textbf{Mean Diff} & \textbf{95\% CI} & \textbf{\textit{d}} & \textbf{\textit{p}$_{\text{adj}}$} \\
+\midrule
+\texttt{fixed\_256}   & \texttt{fixed\_128}   & $+$0.042 & [$+$0.000,\hphantom{$+$}$+$0.084] & 0.122 & .049 \\
+\texttt{fixed\_512}   & \texttt{fixed\_128}   & $+$0.042 & [$+$0.000,\hphantom{$+$}$+$0.084] & 0.122 & .049 \\
+\texttt{semantic\_128} & \texttt{fixed\_128}  & $+$0.043 & [$+$0.001,\hphantom{$+$}$+$0.085] & 0.124 & .046 \\
+\texttt{semantic\_256} & \texttt{fixed\_128}  & $+$0.056 & [$+$0.013,\hphantom{$+$}$+$0.099] & 0.163 & .003 \\
+\texttt{semantic\_512} & \texttt{fixed\_128}  & $+$0.054 & [$+$0.011,\hphantom{$+$}$+$0.097] & 0.158 & .004 \\
+\midrule
+\texttt{fixed\_512}   & \texttt{fixed\_256}   & $+$0.000 & [$-$0.042,\hphantom{$-$}$+$0.042] & 0.000 & 1.000 \\
+\texttt{semantic\_128} & \texttt{fixed\_256}  & $+$0.001 & [$-$0.041,\hphantom{$-$}$+$0.043] & 0.003 & 1.000 \\
+\texttt{semantic\_256} & \texttt{fixed\_256}  & $+$0.014 & [$-$0.029,\hphantom{$-$}$+$0.057] & 0.041 & .936 \\
+\texttt{semantic\_512} & \texttt{fixed\_256}  & $+$0.012 & [$-$0.030,\hphantom{$-$}$+$0.055] & 0.036 & .963 \\
+\texttt{semantic\_128} & \texttt{fixed\_512}  & $+$0.001 & [$-$0.041,\hphantom{$-$}$+$0.043] & 0.003 & 1.000 \\
+\texttt{semantic\_256} & \texttt{fixed\_512}  & $+$0.014 & [$-$0.029,\hphantom{$-$}$+$0.057] & 0.041 & .936 \\
+\texttt{semantic\_512} & \texttt{fixed\_512}  & $+$0.012 & [$-$0.030,\hphantom{$-$}$+$0.055] & 0.036 & .963 \\
+\texttt{semantic\_256} & \texttt{semantic\_128} & $+$0.013 & [$-$0.030,\hphantom{$-$}$+$0.057] & 0.038 & .954 \\
+\texttt{semantic\_512} & \texttt{semantic\_128} & $+$0.012 & [$-$0.032,\hphantom{$-$}$+$0.055] & 0.033 & .975 \\
+\texttt{semantic\_512} & \texttt{semantic\_256} & $-$0.002 & [$-$0.046,\hphantom{$-$}$+$0.042] & 0.005 & 1.000 \\
+\bottomrule
+\end{tabular}
+\end{table}

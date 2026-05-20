@@ -201,6 +201,55 @@ def _load_multihop_rag(max_n: Optional[int] = None) -> list[dict]:
     return records
 
 
+def _load_pubmedqa_artificial(max_n: Optional[int] = None) -> list[dict]:
+    ds = load_dataset("qiaojin/PubMedQA", "pqa_artificial", split="train")
+    records = []
+    for row in ds:
+        context = "\n\n".join(row["context"]["contexts"]) if row.get("context") else ""
+        if not context.strip():
+            continue
+        records.append({
+            "question": row["question"],
+            "answer": row.get("long_answer", row.get("final_decision", "")),
+            "context": context,
+            "query_type": _classify_query_type_heuristic(
+                row["question"], "", {"final_decision": row.get("final_decision", "")}
+            ),
+            "domain": "medical",
+            "dataset": "pubmedqa_artificial",
+        })
+        if max_n and len(records) >= max_n:
+            break
+    return records
+
+
+def _load_financebench(max_n: Optional[int] = None) -> list[dict]:
+    try:
+        ds = load_dataset("PatronusAI/financebench", split="train")
+    except Exception as e:
+        print(f"WARNING: Could not load FinanceBench: {e}")
+        print("  Skipping financebench dataset.")
+        return []
+
+    records = []
+    for row in ds:
+        evidence = row.get("evidence", [])
+        context = "\n\n".join(e["evidence_text"] for e in evidence if e.get("evidence_text", "").strip())
+        if not context.strip():
+            continue
+        records.append({
+            "question": row["question"],
+            "answer": str(row.get("answer", "")),
+            "context": context,
+            "query_type": "single-hop",
+            "domain": "finance",
+            "dataset": "financebench",
+        })
+        if max_n and len(records) >= max_n:
+            break
+    return records
+
+
 def _load_ragcareqa(max_n: Optional[int] = None) -> list[dict]:
     local_path = os.path.join(config.DATA_DIR, "ragcareqa.json")
     if not os.path.exists(local_path):
@@ -233,7 +282,9 @@ LOADERS = {
     "naturalqa": _load_naturalqa,
     "squad2": _load_squad2,
     "pubmedqa": _load_pubmedqa,
+    "pubmedqa_artificial": _load_pubmedqa_artificial,
     "financeqa": _load_financeqa,
+    "financebench": _load_financebench,
     "multihop_rag": _load_multihop_rag,
     "ragcareqa": _load_ragcareqa,
 }

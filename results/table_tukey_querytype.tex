@@ -1,0 +1,17 @@
+\begin{table}[h]
+\centering
+\caption{Tukey HSD post-hoc pairwise comparisons by query type for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit{d} computed using pooled SD. ns = not significant.}
+\label{tab:tukey_querytype}
+\begin{tabular}{llrrrl}
+\toprule
+\textbf{Group A} & \textbf{Group B} & \textbf{Mean Diff} & \textbf{95\% CI} & \textbf{\textit{d}} & \textbf{\textit{p}$_{\text{adj}}$} \\
+\midrule
+Comparative & Multi-hop    & $+$0.071 & [$+$0.021,\hphantom{$+$}0.121] & 0.251 & .002 \\
+Comparative & Single-hop   & $+$0.148 & [$+$0.103,\hphantom{$+$}0.193] & 0.471 & $<$.001 \\
+Comparative & Unanswerable & $+$0.126 & [$+$0.074,\hphantom{$+$}0.178] & 0.436 & $<$.001 \\
+Multi-hop   & Single-hop   & $+$0.077 & [$+$0.047,\hphantom{$+$}0.107] & 0.228 & $<$.001 \\
+Multi-hop   & Unanswerable & $+$0.055 & [$+$0.015,\hphantom{$+$}0.094] & 0.175 & .002 \\
+Single-hop  & Unanswerable & $+$0.022 & [$-$0.011,\hphantom{$+$}0.055] & 0.065 & .307 \\
+\bottomrule
+\end{tabular}
+\end{table}

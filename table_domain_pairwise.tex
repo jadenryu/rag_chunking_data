@@ -2,7 +2,7 @@
 % Cohen's d < 0.2 = trivial, 0.2-0.5 = small, 0.5-0.8 = medium, >0.8 = large
 
 \begin{table}[!t]
-  \caption{Pairwise Comparison of Domains on LLM as Judge Score (Welch's $t$-Test, All Chunk Sizes Pooled)}
+  \caption{Pairwise Comparison of Domains on LLM Judge Score (Welch's $t$-Test, All Chunk Sizes Pooled)}
   \label{tab:domain_pairwise}
   \centering
   \renewcommand{\arraystretch}{1.2}
@@ -10,15 +10,16 @@
     \hline
     \textbf{Comparison} & \textbf{Mean A} & \textbf{Mean B} & \textbf{\textit{p}} & \textbf{\textit{d}} \\
     \hline
-    General vs.\ Medical & 0.862 & 0.871 & $0.188$\phantom{***} & -0.033 \\
-    General vs.\ Finance & 0.862 & 0.634 & $<0.001$* & 0.700 \\
-    Medical vs.\ Finance & 0.871 & 0.634 & $<0.001$* & 0.692 \\
+    General vs.\ Medical & 0.857 & 0.870 & $0.071$\phantom{***} & -0.051 \\
+    General vs.\ Finance & 0.857 & 0.599 & $<0.001$*** & 0.731 \\
+    Medical vs.\ Finance & 0.870 & 0.599 & $<0.001$*** & 0.778 \\
     \hline
   \end{tabular}
   \begin{tablenotes}
     \small
     \item Mean A and Mean B are group means across all chunk sizes.
-    Significance: *\,$p < 0.05$;
+    $d$ = Cohen's $d$ (effect size, sign indicates direction).
+    Significance: ***\,$p < 0.001$; **\,$p < 0.01$; *\,$p < 0.05$;
     unlabelled $p$-values are non-significant ($p \geq 0.05$).
   \end{tablenotes}
 \end{table}

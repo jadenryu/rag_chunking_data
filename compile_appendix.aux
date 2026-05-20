@@ -1,0 +1,41 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Dataset Details}{2}{appendix.A}\protected@file@percent }
+\newlabel{app:datasets}{{A}{2}{Dataset Details}{appendix.A}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Benchmark datasets included in the balanced evaluation corpus.}}{2}{table.1}\protected@file@percent }
+\newlabel{tab:datasets}{{1}{2}{Benchmark datasets included in the balanced evaluation corpus}{table.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Chunking Strategy Specifications}{2}{appendix.B}\protected@file@percent }
+\newlabel{app:chunking}{{B}{2}{Chunking Strategy Specifications}{appendix.B}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}LLM-as-Judge Prompt}{2}{appendix.C}\protected@file@percent }
+\newlabel{app:judge_prompt}{{C}{2}{LLM-as-Judge Prompt}{appendix.C}{}}
+\citation{ragas2023}
+\@writefile{toc}{\contentsline {section}{\numberline {D}Query-Type Classification Prompt}{4}{appendix.D}\protected@file@percent }
+\newlabel{app:qt_prompt}{{D}{4}{Query-Type Classification Prompt}{appendix.D}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {E}RAGAS Metric Definitions}{4}{appendix.E}\protected@file@percent }
+\newlabel{app:ragas}{{E}{4}{RAGAS Metric Definitions}{appendix.E}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {F}Full ANOVA Results}{5}{appendix.F}\protected@file@percent }
+\newlabel{app:anova}{{F}{5}{Full ANOVA Results}{appendix.F}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {G}Tukey HSD Post-Hoc Tables}{5}{appendix.G}\protected@file@percent }
+\newlabel{app:tukey}{{G}{5}{Tukey HSD Post-Hoc Tables}{appendix.G}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {H}Targeted Contrast: Finance vs.\ General Domain}{5}{appendix.H}\protected@file@percent }
+\newlabel{app:contrast}{{H}{5}{Targeted Contrast: Finance vs.\ General Domain}{appendix.H}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {I}RAG Pipeline Overview}{5}{appendix.I}\protected@file@percent }
+\newlabel{app:pipeline}{{I}{5}{RAG Pipeline Overview}{appendix.I}{}}
+\bibcite{ragas2023}{1}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Representative sample queries drawn from the six benchmark datasets. Each row shows one question--answer pair as presented to the RAG pipeline. ``N/A'' denotes unanswerable items for which no reference answer exists. Medical answers are truncated for brevity; full long-form answers were used during evaluation.}}{7}{table.2}\protected@file@percent }
+\newlabel{tab:sample_queries}{{2}{7}{Representative sample queries drawn from the six benchmark datasets. Each row shows one question--answer pair as presented to the RAG pipeline. ``N/A'' denotes unanswerable items for which no reference answer exists. Medical answers are truncated for brevity; full long-form answers were used during evaluation}{table.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Chunking strategy specifications. ``Max tokens'' denotes the upper token limit per chunk; fixed strategies use exact-size windows with no overlap.}}{8}{table.3}\protected@file@percent }
+\newlabel{tab:chunking}{{3}{8}{Chunking strategy specifications. ``Max tokens'' denotes the upper token limit per chunk; fixed strategies use exact-size windows with no overlap}{table.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Type III ANOVA Results for LLM-as-Judge Score. Main effects only; interaction terms were excluded due to empty cells arising from domain--query-type confounding (medical and finance domains contain only single-hop queries). $\eta ^2_p$ = partial eta squared.}}{8}{table.4}\protected@file@percent }
+\newlabel{tab:anova}{{4}{8}{Type III ANOVA Results for LLM-as-Judge Score. Main effects only; interaction terms were excluded due to empty cells arising from domain--query-type confounding (medical and finance domains contain only single-hop queries). $\eta ^2_p$ = partial eta squared}{table.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Tukey HSD post-hoc pairwise comparisons by domain for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit  {d} computed using pooled SD. ns = not significant.}}{8}{table.5}\protected@file@percent }
+\newlabel{tab:tukey_domain}{{5}{8}{Tukey HSD post-hoc pairwise comparisons by domain for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit {d} computed using pooled SD. ns = not significant}{table.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Tukey HSD post-hoc pairwise comparisons by query type for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit  {d} computed using pooled SD. ns = not significant.}}{9}{table.6}\protected@file@percent }
+\newlabel{tab:tukey_querytype}{{6}{9}{Tukey HSD post-hoc pairwise comparisons by query type for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit {d} computed using pooled SD. ns = not significant}{table.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Tukey HSD post-hoc pairwise comparisons by chunking strategy for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit  {d} computed using pooled SD. All significant pairs involve \texttt  {fixed\_128} as the lower-scoring group; effect sizes are negligible throughout ($d < 0.20$), consistent with the small ANOVA $\eta ^2_p = .003$.}}{9}{table.7}\protected@file@percent }
+\newlabel{tab:tukey_strategy}{{7}{9}{Tukey HSD post-hoc pairwise comparisons by chunking strategy for LLM-as-Judge Score. Mean difference = Group A $-$ Group B (positive values indicate Group A scores higher). 95\% CI = confidence interval for mean difference. Cohen's \textit {d} computed using pooled SD. All significant pairs involve \texttt {fixed\_128} as the lower-scoring group; effect sizes are negligible throughout ($d < 0.20$), consistent with the small ANOVA $\eta ^2_p = .003$}{table.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Welch's \textit  {t}-test: Finance vs.\ General on (LLM Judge Score $-$ Faithfulness). Negative mean difference indicates Finance scores are lower on this combined metric. Cohen's \textit  {d} computed using pooled SD.}}{10}{table.8}\protected@file@percent }
+\newlabel{tab:targeted_contrast}{{8}{10}{Welch's \textit {t}-test: Finance vs.\ General on (LLM Judge Score $-$ Faithfulness). Negative mean difference indicates Finance scores are lower on this combined metric. Cohen's \textit {d} computed using pooled SD}{table.8}{}}
+\gdef \@abspage@last{10}

@@ -107,57 +107,75 @@ def compute_faithfulness(answer: str, contexts: list[str]) -> float:
     return len(grounded) / len(a_tokens)
 
 
+BALANCED_DATASETS = {
+    "hotpotqa", "squad2",
+    "pubmedqa", "pubmedqa_artificial",
+    "financeqa", "financebench",
+}
+
+
 def _try_ragas_evaluate(results: list[dict], llm_name: str) -> Optional[list[dict]]:
-    try:
-        from ragas import evaluate as ragas_evaluate
-        from ragas.metrics import (
-            answer_relevancy,
-            context_precision,
-            context_recall,
-            faithfulness,
-        )
-        from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+    from ragas import evaluate as ragas_evaluate
+    from ragas.metrics import AnswerRelevancy, Faithfulness, ContextPrecision, ContextRecall
+    from ragas.llms import LangchainLLMWrapper
+    from ragas.embeddings import LangchainEmbeddingsWrapper
+    from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-        llm = ChatOpenAI(model="gpt-4o-mini", api_key=config.OPENAI_API_KEY)
-        embeddings = OpenAIEmbeddings(model="text-embedding-3-small", api_key=config.OPENAI_API_KEY)
+    lc_llm = ChatOpenAI(
+        model="openai/gpt-4o-mini",
+        api_key=config.OPENROUTER_API_KEY,
+        base_url="https://openrouter.ai/api/v1",
+    )
+    lc_embeddings = OpenAIEmbeddings(model="text-embedding-3-small", api_key=config.OPENAI_API_KEY)
+    ragas_llm = LangchainLLMWrapper(lc_llm)
+    ragas_embeddings = LangchainEmbeddingsWrapper(lc_embeddings)
 
-        questions, answers, contexts, ground_truths = [], [], [], []
-        for r in results:
-            if llm_name not in r["responses"]:
-                continue
-            response = r["responses"][llm_name]
-            if response.startswith("ERROR:"):
-                continue
-            questions.append(r["question"])
-            answers.append(response)
-            contexts.append(r["retrieved_chunks"])
-            ground_truths.append(r["ground_truth"])
+    questions, answers, contexts, ground_truths = [], [], [], []
+    for r in results:
+        if llm_name not in r["responses"]:
+            continue
+        response = r["responses"][llm_name]
+        if response.startswith("ERROR:"):
+            continue
+        questions.append(r["question"])
+        answers.append(response)
+        contexts.append(r["retrieved_chunks"])
+        ground_truths.append(r["ground_truth"])
 
-        if not questions:
-            return None
-
-        ds = Dataset.from_dict({
-            "question": questions,
-            "answer": answers,
-            "contexts": contexts,
-            "ground_truth": ground_truths,
-        })
-
-        ragas_result = ragas_evaluate(
-            ds,
-            metrics=[answer_relevancy, faithfulness, context_precision, context_recall],
-            llm=llm,
-            embeddings=embeddings,
-        )
-        return ragas_result.to_pandas().to_dict("records")
-    except Exception as e:
-        print(f"  RAGAS library failed: {e}")
-        print(f"  Using manual metric computation instead.")
+    if not questions:
         return None
+
+    ds = Dataset.from_dict({
+        "question": questions,
+        "answer": answers,
+        "contexts": contexts,
+        "ground_truth": ground_truths,
+    })
+
+    from ragas import RunConfig
+    run_config = RunConfig(max_workers=10, timeout=120, max_retries=5)
+
+    ragas_result = ragas_evaluate(
+        ds,
+        metrics=[
+            AnswerRelevancy(llm=ragas_llm, embeddings=ragas_embeddings),
+            Faithfulness(llm=ragas_llm),
+            ContextPrecision(llm=ragas_llm),
+            ContextRecall(llm=ragas_llm),
+        ],
+        run_config=run_config,
+        raise_exceptions=False,
+    )
+    return ragas_result.to_pandas().to_dict("records")
 
 
 def evaluate_with_metrics(results: list[dict], llm_name: str) -> list[dict]:
-    ragas_results = None
+    print(f"  Running RAGAS for {llm_name}...")
+    ragas_results = _try_ragas_evaluate(results, llm_name)
+    if ragas_results:
+        print(f"  RAGAS succeeded: {len(ragas_results)} records")
+    else:
+        print(f"  RAGAS returned no results — falling back to manual metrics")
 
     evaluated = []
     idx = 0
@@ -208,16 +226,33 @@ def evaluate_with_metrics(results: list[dict], llm_name: str) -> list[dict]:
 
 
 def evaluate_all(results: list[dict]) -> list[dict]:
+    import os
+    checkpoint_dir = os.path.join(config.RESULTS_DIR, "ragas_checkpoints")
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
     all_evaluated = []
     llm_names = set()
+
+    results = [r for r in results if r.get("dataset") in BALANCED_DATASETS]
+    print(f"Filtered to {len(results)} results across balanced datasets")
+
     for r in results:
         llm_names.update(r["responses"].keys())
 
     for llm_name in sorted(llm_names):
-        print(f"\nEvaluating {llm_name}...")
-        evaluated = evaluate_with_metrics(results, llm_name)
+        checkpoint_path = os.path.join(checkpoint_dir, f"{llm_name}.json")
+        if os.path.exists(checkpoint_path):
+            with open(checkpoint_path) as f:
+                evaluated = json.load(f)
+            print(f"\nLoaded checkpoint for {llm_name}: {len(evaluated)} results")
+        else:
+            print(f"\nEvaluating {llm_name}...")
+            evaluated = evaluate_with_metrics(results, llm_name)
+            with open(checkpoint_path, "w") as f:
+                json.dump(evaluated, f)
+            print(f"  {len(evaluated)} results evaluated for {llm_name}")
+
         all_evaluated.extend(evaluated)
-        print(f"  {len(evaluated)} results evaluated for {llm_name}")
 
     return all_evaluated
 
