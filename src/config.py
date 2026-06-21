@@ -113,9 +113,11 @@ JUDGE_MODEL = "openai/gpt-4o-mini"
 JUDGE_CONCURRENCY = 15
 JUDGE_MAX_CONTEXT_CHARS = 6000
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
-FIGURES_DIR = os.path.join(os.path.dirname(__file__), "figures")
+# Project root is the parent of src/ (this file lives in src/)
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
+FIGURES_DIR = os.path.join(PROJECT_ROOT, "figures")
 
 for d in [DATA_DIR, RESULTS_DIR, FIGURES_DIR]:
     os.makedirs(d, exist_ok=True)

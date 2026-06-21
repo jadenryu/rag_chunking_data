@@ -2,3 +2,11 @@
 __pycache__/
 *.pyc
 .claude/
+
+# macOS
+.DS_Store
+Icon?
+
+# environments / deps
+venv/
+node_modules/
