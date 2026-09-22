@@ -1,0 +1,12 @@
+{
+  "upgrades": [],
+  "omitted": 0,
+  "pending": 0,
+  "scope": "all",
+  "scopeSource": "repo-policy",
+  "outOfScope": 0,
+  "mode": "pr",
+  "untracked": 0,
+  "manifests": 1,
+  "deps": 1
+}
